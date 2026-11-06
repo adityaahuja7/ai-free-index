@@ -8,6 +8,12 @@ on:
       - "data/index.json"
       - "src/**"
       - ".github/workflows/pages.yml"
+  # Commits pushed with a workflow's own GITHUB_TOKEN do NOT fire `push` events,
+  # so the daily refresh would commit fresh data that never reached the site.
+  # Chain onto the refresh run explicitly instead of relying on the push above.
+  workflow_run:
+    workflows: ["Refresh index"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -21,9 +27,15 @@ concurrency:
 
 jobs:
   build:
+    # A failed refresh leaves the previous dataset in place: nothing new to deploy.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Pin to the branch tip: on workflow_run the default SHA can predate the
+          # commit the refresh just pushed.
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
