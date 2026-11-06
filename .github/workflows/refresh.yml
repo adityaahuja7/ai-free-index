@@ -1,0 +1,61 @@
+name: Refresh index
+
+# Keeps the index current on the free GitHub Actions minutes tier:
+# one scheduled run per day, plus manual runs, committing only data/ back.
+
+on:
+  schedule:
+    - cron: "15 1 * * *"   # 01:15 UTC daily
+  workflow_dispatch:
+    inputs:
+      no_enrich:
+        description: "Skip Gemini enrichment for this run"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-index
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run pipeline
+        env:
+          # Free-tier key from Google AI Studio, stored as a repository secret.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS }}
+          # Raises GitHub search limits and avoids shared-runner throttling.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PYTHONPATH=src python -m aiindex build ${{ inputs.no_enrich && '--no-enrich' || '' }}
+
+      - name: Show index statistics
+        run: PYTHONPATH=src python -m aiindex stats
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "ai-free-index bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/index.json
+          # The enrichment cache only exists once Gemini has answered something.
+          if [ -f data/enrichment-cache.json ]; then
+            git add data/enrichment-cache.json
+          fi
+          if git diff --cached --quiet; then
+            echo "no data changes"
+          else
+            git commit -m "chore(data): refresh index $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
