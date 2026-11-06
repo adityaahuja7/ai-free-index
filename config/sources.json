@@ -1,0 +1,56 @@
+{
+  "github": {
+    "enabled": true,
+    "per_page": 100,
+    "min_stars": 150,
+    "max_requests": 12,
+    "request_delay_seconds": 7,
+    "queries": [
+      "topic:llm",
+      "topic:large-language-models",
+      "topic:ai-agents",
+      "topic:llm-serving",
+      "topic:rag",
+      "topic:text-to-image",
+      "topic:speech-recognition",
+      "topic:vector-database",
+      "topic:fine-tuning",
+      "topic:local-llm",
+      "topic:ai topic:self-hosted",
+      "topic:machine-learning topic:awesome"
+    ]
+  },
+  "hackernews": {
+    "enabled": true,
+    "hits_per_page": 100,
+    "min_points": 25,
+    "days": 45,
+    "request_delay_seconds": 1,
+    "queries": [
+      "open source LLM",
+      "open source AI agent",
+      "self-hosted AI",
+      "local LLM",
+      "open weights model",
+      "open source AI release"
+    ]
+  },
+  "awesome": {
+    "enabled": true,
+    "request_delay_seconds": 1,
+    "lists": [
+      "e2b-dev/awesome-ai-agents",
+      "steven2358/awesome-generative-ai",
+      "kyrolabs/awesome-langchain",
+      "awesome-selfhosted/awesome-selfhosted"
+    ]
+  },
+  "gemini": {
+    "enabled": true,
+    "model": "gemini-2.5-flash",
+    "prompt_version": "v1",
+    "batch_size": 12,
+    "max_requests_per_run": 40,
+    "request_delay_seconds": 5
+  }
+}

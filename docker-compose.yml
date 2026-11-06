@@ -1,0 +1,14 @@
+services:
+  index:
+    build: .
+    image: ai-free-index:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # Free-tier Gemini key: export GEMINI_API_KEY=... before `docker compose up`
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    volumes:
+      # keep the database and enrichment cache across restarts
+      - ./data:/app/data
+    restart: unless-stopped
